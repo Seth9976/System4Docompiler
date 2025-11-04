@@ -1,0 +1,51 @@
+# .github/workflows/unzip.yml
+
+name: Unzip Code
+on:
+  push:
+    # 仅在 main 分支发生推送时触发，你可以根据需要修改
+    branches:
+      - main 
+
+# 为整个工作流授予对仓库内容的写权限
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    runs-on: ubuntu-22.04
+    # 判断触发者不是 GitHub Actions 自身，防止无限循环
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # 建议使用最新的主版本 v4
+
+      - name: List files (for debugging)
+        # 列出文件以供调试，检查 project.zip 是否存在
+        run: ls -la
+
+      - name: Unzip project.zip
+        run: |
+          if [ -f project.zip ]; then
+            # 使用 -o 选项强制覆盖同名文件
+            unzip -o project.zip -d .
+            rm project.zip
+          else
+            echo "Error: project.zip not found!"
+            exit 1
+          fi
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 检查是否有文件变动。-s 表示静默模式，如果没有变动则返回非零退出码
+          if ! git diff --quiet; then
+            git add .
+            git commit -m "Chore: Unzipped project.zip" # 使用更规范的提交信息
+            git push
+          else
+            echo "No changes to commit."
+          fi
