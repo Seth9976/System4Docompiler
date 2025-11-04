@@ -1,0 +1,144 @@
+const int true = 1;
+const int false = 0;
+
+void set(array@int a)
+{
+	a[0] = 1;
+}
+
+void set_ref(ref array@int a)
+{
+	a[0] = 1;
+}
+
+void addone(ref int i)
+{
+	i = i+1;
+}
+
+class WithoutCtor {
+public:
+	array@int a[3];
+};
+
+class WithCtor {
+public:
+	WithCtor() {}
+	array@int@2 a[4][3];
+};
+
+int main()
+{
+	array@int ia[1];
+	ia[0] = 1;
+	assert(ia[0] == 1);
+
+	array@string sa[1];
+	sa[0] = "1";
+	assert(sa[0] == "1");
+
+	array@int a1[1];
+	set(a1);
+	assert(a1[0] == 0);
+
+	array@int a2[1];
+	addone(a2[0]);
+	assert(a2[0] == 1);
+
+	array@int a3[1];
+	set_ref(a3);
+	assert(a3[0] == 1);
+
+	array@int a4[10];
+	assert(a4.Numof() == 10);
+	a4.PushBack(1);
+	assert(a4.Numof(1) == 11);
+	// a4.PushBack("s");  // type error
+
+	array@int@2 a[1][2];
+	assert(a.Numof(1) == 1);
+	assert(a.Numof(2) == 2);
+	a[0][1] = 1;
+	assert(a[0][1] == 1);
+	a.Alloc(2, 3);
+	a[1][2] = 2;
+	assert(a[1][2] == 2);
+
+	WithoutCtor o1;
+	assert(o1.a.Numof() == 3);
+	WithCtor o2;
+	assert(o2.a.Numof(1) == 4);
+
+	test_sort();
+	test_find();
+
+	return 0;
+}
+
+struct S {
+	int a;
+};
+
+void test_sort()
+{
+	array@int ai[3];
+	ai[0] = 3;
+	ai[1] = 1;
+	ai[2] = 2;
+	ai.Sort();
+	assert(ai[0] == 1);
+	assert(ai[1] == 2);
+	assert(ai[2] == 3);
+
+	ai.Sort(&int_compare_rev);
+	assert(ai[0] == 3);
+	assert(ai[1] == 2);
+	assert(ai[2] == 1);
+
+	array@S as[3];
+	as[0].a = 3;
+	as[1].a = 1;
+	as[2].a = 2;
+	as.Sort(&S_compare);
+	assert(as[0].a == 1);
+	assert(as[1].a == 2);
+	assert(as[2].a == 3);
+}
+
+int int_compare_rev(int a, int b)
+{
+	return b - a;
+}
+
+int S_compare(ref S a, ref S b)
+{
+	return a.a - b.a;
+}
+
+void test_find()
+{
+	array@int ai[3];
+	ai[0] = 3;
+	ai[1] = 4;
+	ai[2] = 5;
+	assert(ai.Find(0, ai.Numof(), 4) == 1);
+
+	array@bool ab[3];
+	ab[0] = true;
+	ab[1] = true;
+	ab[2] = false;
+	assert(ab.Find(0, ab.Numof(), false) == 2);
+
+	array@S as[3];
+	as[0].a = 3;
+	as[1].a = 4;
+	as[2].a = 5;
+	S s;
+	s.a = 4;
+	assert(as.Find(0, as.Numof(), s, &S_match) == 1);
+}
+
+bool S_match(ref S a, ref S b)
+{
+	return a.a == b.a;
+}

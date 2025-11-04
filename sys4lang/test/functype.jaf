@@ -1,0 +1,51 @@
+functype int arithmetic(int, int);
+functype int ref_arithmetic(ref int, int);
+functype int thunk(void);
+
+int add(int a, int b)
+{
+	return a + b;
+}
+
+int ref_add(ref int a, int b)
+{
+	return a + b;
+}
+
+int one(void)
+{
+	return 1;
+}
+
+int two(void)
+{
+	return 2;
+}
+
+int main()
+{
+	arithmetic fa = &add;
+	assert(fa(1, 2) == 3);
+
+	assert(fa != NULL);
+	assert(fa == &add);
+	assert(fa == fa);
+	fa = NULL;
+	assert(fa == NULL);
+	assert(fa != &add);
+
+	int a = 1;
+	ref_arithmetic fr = NULL;
+	fr = &ref_add;
+	assert(fr(a, 2) == 3);
+
+	// assert(fr != fa);  // type error
+
+	thunk ft = "one";
+	assert(ft() == 1);
+
+	ft = "two";
+	assert(ft() == 2);
+
+	return 0;
+}

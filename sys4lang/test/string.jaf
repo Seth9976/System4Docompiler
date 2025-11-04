@@ -1,0 +1,46 @@
+int main()
+{
+	assert("a" + "b" == "ab");
+	assert("a" < "b");
+	assert("b" > "a");
+	assert("a" <= "a");
+	assert("a" >= "a");
+	assert("a" == "a");
+	assert("a" != "b");
+
+	string s;
+	s = "a"; assert((s += "b") == "ab");
+	assert(s[0] == 97);
+	s[1] = 'c'; assert(s == "ac");
+
+	string concatenated = "asdf\n" "\nfdsa";
+	assert(concatenated == "asdf\n\nfdsa");
+
+	const string concatenated_const = "abc" + "def";
+	assert(concatenated_const == "abcdef");
+
+	assert(string(42) == "42");
+	assert(string(42.5) == "42.500000");
+	assert(42.5.String() == "42.500000");
+	assert(42.5.String(3) == "42.500");
+
+	// s-length
+	// s-lengthbyte
+	// s-empty
+	// s-find
+	// s-getpart
+	// s-pushback
+	// s-popback
+	// s-erase
+
+	// s-mod
+	bool b;
+	int i;
+	i = 42; b = 1; s = "ab"; assert("42 1 ab" == "%d %d %s" % i % b % s);
+
+	// s-from-int
+	// s-from-float
+	// s-to-int
+
+	return 0;
+}

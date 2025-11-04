@@ -1,0 +1,111 @@
+ref int g_ri;
+
+void intref(ref int a)
+{
+	a = 13;
+}
+
+void floatref(ref float a)
+{
+	a = 1.3;
+}
+
+void stringref(ref string a)
+{
+	a = "13";
+}
+
+struct S {
+	ref int a;
+};
+
+ref int ref_int(int val)
+{
+	return val;
+}
+
+ref int ternary(bool b)
+{
+	return b ? ref_int(42) : ref_int(43);
+}
+
+class C {
+public:
+	C() { n = 42; }
+	int get() { return n; }
+	int n;
+};
+
+ref C new_C()
+{
+	return new C;
+}
+
+bool true() {
+	return 1;
+}
+
+int main()
+{
+	int i;
+	intref(i);
+	assert(i == 13);
+
+	int a;
+	ref int ra;
+	ref int rb;
+	assert(ra === NULL);
+	ra <- a;
+	rb <- ra;
+	assert(ra === rb);
+	assert(rb !== NULL);
+	rb = 1;
+	assert(a == 1);
+	assert(ra == 1);
+	rb <- NULL;
+	assert(rb === NULL);
+	g_ri <- a;
+	assert(g_ri === ra);
+	ra <- a;
+	rb <- NULL;
+	assert(g_ri === (true() ? ra : rb));
+	assert(a == (true() ? (int)ra : (int)rb));
+
+	float f;
+	floatref(f);
+	assert(f == 1.3);
+
+	string s;
+	stringref(s);
+	assert(s == "13");
+
+	string ss;
+	ref string rs = ss;
+	ref string rt;
+	assert(rt === NULL);
+	rt <- rs;
+	assert(rs === rt);
+	rt = "1";
+	assert(rs === rt);
+	assert(rt !== NULL);
+	assert(ss == "1");
+	assert(rs == "1");
+	assert(rs.Length() == 1);
+
+	S obj;
+	obj.a <- a;
+	assert(obj.a === ra);
+	obj.a <- NULL;
+	assert(obj.a === NULL);
+
+	ref S rs = new S;
+
+	new_C();
+	assert(new_C().get() == 42);
+	assert(new_C().n == 42);
+
+	ra <- ternary(1);
+	assert(ra == 42);
+
+	return 0;
+}

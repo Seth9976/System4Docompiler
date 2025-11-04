@@ -1,0 +1,43 @@
+struct S {
+	int a;
+	int b;
+};
+
+int main()
+{
+	int i = 1, j = 2;
+	i <=> j;
+	assert(i == 2);
+	assert(j == 1);
+
+	float f = 1.0, g = 2.0;
+	f <=> g;
+	assert(f == 2.0);
+	assert(g == 1.0);
+
+	if (0) {
+		ref int ri, rj;
+		ri <=> rj;  // FIXME: this should be compile error
+	}
+
+	string s = "hello", t = "world";
+	s <=> t;
+	assert(s == "world");
+	assert(t == "hello");
+
+	array@int ai[2];
+	ai[0] = 1;
+	ai[1] = 2;
+	ai[0] <=> ai[1];
+	assert(ai[0] == 2);
+	assert(ai[1] == 1);
+
+	S s;
+	s.a = 1;
+	s.b = 2;
+	s.a <=> s.b;
+	assert(s.a == 2);
+	assert(s.b == 1);
+
+	return 0;
+}
