@@ -1,5 +1,4 @@
-# 此文件为修正版，移除了所有导致错误的不可见特殊字符
-# 并修正了 OCaml 的版本
+# .github/workflows/build.yml
 
 name: Build All Tools
 
@@ -16,7 +15,8 @@ permissions:
 jobs:
   build-alice-tools:
     name: Build alice-tools
-    runs-on: ubuntu-latest
+    # 使用明确的 ubuntu-22.04 以避免潜在的包兼容性问题
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         buildtype: [debug, release]
@@ -28,7 +28,6 @@ jobs:
       - name: 安装依赖
         run: |
           sudo apt-get update
-          # 修正：移除了所有行尾的不可见字符
           sudo apt-get install -y \
             bison \
             flex \
@@ -57,18 +56,21 @@ jobs:
 
   build-sys4lang:
     name: Build sys4lang
-    runs-on: ubuntu-latest
+    # 关键修改：降级到 ubuntu-22.04 以解决 darcs 包缺失的问题
+    runs-on: ubuntu-22.04
       
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
 
       - name: 设置 OCaml
-        uses: ocaml/setup-ocaml@v2
+        # 建议升级到 v3
+        uses: ocaml/setup-ocaml@v3
         with:
-          # 修正：将 OCaml 版本 4.14.x 更改为 5.2.x
-          # 以匹配 sys4lang.opam 文件中 "ocaml {>= "5.2"}" 的要求
+          # 保持 5.2.x 以匹配你的 opam 文件要求
           ocaml-compiler: '5.2.x'
+          # 可选：如果降级系统后仍然有问题，可以尝试取消注释下面这行来禁用 darcs
+          # allow-prerelease-opam: true
 
       - name: 安装依赖
         run: |
