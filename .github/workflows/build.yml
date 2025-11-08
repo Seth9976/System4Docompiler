@@ -54,56 +54,57 @@ jobs:
           name: alice-tools-${{ matrix.buildtype }}
           path: alice-tools/build/src/alice
 
-  build-sys4lang:
-    name: Build sys4lang
-    # 关键修改：降级到 ubuntu-22.04 以解决 darcs 包缺失的问题
-    runs-on: ubuntu-22.04
-      
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
+	build-sys4lang:
+	    name: Build sys4lang
+	    runs-on: ubuntu-22.04
+	      
+	    steps:
+	      - name: 检出代码
+	        uses: actions/checkout@v4
 
-      - name: 设置 OCaml
-        # 建议升级到 v3
-        uses: ocaml/setup-ocaml@v3
-        with:
-          # 保持 5.2.x 以匹配你的 opam 文件要求
-          ocaml-compiler: '5.2.x'
-          # 可选：如果降级系统后仍然有问题，可以尝试取消注释下面这行来禁用 darcs
-          # allow-prerelease-opam: true
+	      - name: 设置 OCaml
+	        uses: ocaml/setup-ocaml@v3
+	        with:
+	          ocaml-compiler: '5.2.x'
 
-      - name: 安装依赖
-        run: |
-          cd sys4lang
-          opam install . --deps-only --with-test
+	      - name: 安装依赖
+	        run: |
+	          cd sys4lang
+	          # 更新 opam 仓库
+	          opam update
+	          # 显式安装 dune 以确保它存在，然后安装其他依赖
+	          opam install dune
+	          opam install . --deps-only --with-test
 
-      - name: 构建 sys4lang (debug)
-        run: |
-          cd sys4lang
-          dune build
+	      - name: 构建 sys4lang (debug)
+	        run: |
+	          cd sys4lang
+	          # 使用 'opam exec --' 确保在 opam 环境中找到 dune
+	          opam exec -- dune build
 
-      - name: 构建 sys4lang (release)
-        run: |
-          cd sys4lang
-          dune build --profile release
+	      - name: 构建 sys4lang (release)
+	        run: |
+	          cd sys4lang
+	          # 使用 'opam exec --' 确保在 opam 环境中找到 dune
+	          opam exec -- dune build --profile release
 
-      - name: 上传 debug 产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: sys4lang-debug
-          path: |
-            sys4lang/_build/default/bin/sys4c.exe
-            sys4lang/_build/default/bin/sys4dc.exe
-            sys4lang/_build/default/bin/sys4lsp.exe
+	      - name: 上传 debug 产物
+	        uses: actions/upload-artifact@v4
+	        with:
+	          name: sys4lang-debug
+	          path: |
+	            sys4lang/_build/default/bin/sys4c.exe
+	            sys4lang/_build/default/bin/sys4dc.exe
+	            sys4lang/_build/default/bin/sys4lsp.exe
 
-      - name: 上传 release 产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: sys4lang-release
-          path: |
-            sys4lang/_build/release/bin/sys4c.exe
-            sys4lang/_build/release/bin/sys4dc.exe
-            sys4lang/_build/release/bin/sys4lsp.exe
+	      - name: 上传 release 产物
+	        uses: actions/upload-artifact@v4
+	        with:
+	          name: sys4lang-release
+	          path: |
+	            sys4lang/_build/release/bin/sys4c.exe
+	            sys4lang/_build/release/bin/sys4dc.exe
+	            sys4lang/_build/release/bin/sys4lsp.exe
 
   build-aindecompiler:
     name: Build AinDecompiler
