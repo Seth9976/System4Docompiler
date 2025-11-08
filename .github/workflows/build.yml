@@ -1,0 +1,129 @@
+name: Build All Tools  
+  
+on:  
+  push:  
+    branches: [ main ]  
+  pull_request:  
+    branches: [ main ]  
+  workflow_dispatch:  
+  
+permissions:  
+  contents: write  
+  
+jobs:  
+  build-alice-tools:  
+    name: Build alice-tools  
+    runs-on: ubuntu-latest  
+    strategy:  
+      matrix:  
+        buildtype: [debug, release]  
+      
+    steps:  
+      - name: Checkout code  
+        uses: actions/checkout@v4  
+  
+      - name: Install dependencies  
+        run: |  
+          sudo apt-get update  
+          sudo apt-get install -y \  
+            bison \  
+            flex \  
+            meson \  
+            ninja-build \  
+            libpng-dev \  
+            libturbojpeg0-dev \  
+            libwebp-dev \  
+            zlib1g-dev  
+  
+      - name: Configure meson  
+        run: |  
+          cd alice-tools  
+          meson setup build --buildtype=${{ matrix.buildtype }}  
+  
+      - name: Build with ninja  
+        run: |  
+          cd alice-tools  
+          ninja -C build  
+  
+      - name: Upload artifacts  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: alice-tools-${{ matrix.buildtype }}  
+          path: alice-tools/build/src/alice  
+  
+  build-sys4lang:  
+    name: Build sys4lang  
+    runs-on: ubuntu-latest  
+      
+    steps:  
+      - name: Checkout code  
+        uses: actions/checkout@v4  
+  
+      - name: Setup OCaml  
+        uses: ocaml/setup-ocaml@v2  
+        with:  
+          ocaml-compiler: 4.14.x  
+  
+      - name: Install dependencies  
+        run: |  
+          cd sys4lang  
+          opam install . --deps-only --with-test  
+  
+      - name: Build sys4lang (debug)  
+        run: |  
+          cd sys4lang  
+          dune build  
+  
+      - name: Build sys4lang (release)  
+        run: |  
+          cd sys4lang  
+          dune build --profile release  
+  
+      - name: Upload debug artifacts  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: sys4lang-debug  
+          path: |  
+            sys4lang/_build/default/bin/sys4c.exe  
+            sys4lang/_build/default/bin/sys4dc.exe  
+            sys4lang/_build/default/bin/sys4lsp.exe  
+  
+      - name: Upload release artifacts  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: sys4lang-release  
+          path: |  
+            sys4lang/_build/release/bin/sys4c.exe  
+            sys4lang/_build/release/bin/sys4dc.exe  
+            sys4lang/_build/release/bin/sys4lsp.exe  
+  
+  build-aindecompiler:  
+    name: Build AinDecompiler  
+    runs-on: windows-latest  
+    strategy:  
+      matrix:  
+        configuration: [Debug, Release]  
+      
+    steps:  
+      - name: Checkout code  
+        uses: actions/checkout@v4  
+  
+      - name: Setup MSBuild  
+        uses: microsoft/setup-msbuild@v2  
+  
+      - name: Restore NuGet packages  
+        run: |  
+          cd "AinDecompiler/Source Code/AinDecompiler"  
+          nuget restore AinDecompiler.csproj -PackagesDirectory ../packages  
+  
+      - name: Build AinDecompiler  
+        run: |  
+          cd "AinDecompiler/Source Code/AinDecompiler"  
+          msbuild AinDecompiler.csproj /p:Configuration=${{ matrix.configuration }} /p:Platform=x86  
+  
+      - name: Upload artifacts  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: AinDecompiler-${{ matrix.configuration }}  
+          path: |  
+            AinDecompiler/Source Code/AinDecompiler/bin/x86/${{ matrix.configuration }}/
